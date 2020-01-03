@@ -1,13 +1,8 @@
 from jinja2 import FileSystemLoader, Environment, select_autoescape
 import random
 
-env = Environment(
-    loader = FileSystemLoader("."),
-    autoescape=select_autoescape(['html', 'xml'])
-)
-
-template = env.get_template("bingo-page.html")
-
+# The number of unique Bingo cards
+num_cards = 20
 questions = [
     "Ask someone: “What is the best piece of career advice you’ve received?”",
     "Ask someone: “What is the last book you finished reading?”",
@@ -60,18 +55,43 @@ questions = [
     "Play 2 truths and a lie with someone!",
 ]
 
+env = Environment(
+    loader = FileSystemLoader("."),
+    autoescape=select_autoescape(['html', 'xml'])
+)
+
+# Define some tests to determine the type of the question.
+def is_type_ask(question):
+    return question.startswith("Ask")
+
+def is_type_find(question):
+    return question.startswith("Find")
+
+env.tests['type_ask'] = is_type_ask
+env.tests['type_find'] = is_type_find
+
+# Load the template
+template = env.get_template("bingo-page.html")
+
+# Write to resulting page.
 with open("./bingo-sheets.html", "w") as bingo_file:
+    # First, insert the HTML header.
     with open("bingo-header.html", "r") as bingo_header_file:
         bingo_file.write(bingo_header_file.read())
 
-    for sheet_number in range(20):
-        sheet = random.sample(questions, 25)
-        sheet[12] = "BINGO"
-        n = 5
+    # Loop through the template num_cards times to produce that many unique Bingo cards
+    for i in range(num_cards):
+        # Get a random sample of 25 questions from the question bank
+        card = random.sample(questions, 25)
 
-        grid = [sheet[i:i + n] for i in range(0, len(sheet), n)]
+        # Replace the center grid with "BINGO"
+        card[12] = "BINGO"
+
+        # Split the list into 5 lists of 5 to form the grid
+        grid = [card[i:i + 5] for i in range(0, len(card), 5)]
 
         bingo_file.write(template.render(grid=grid))
 
+    # Insert HTML footer at the bottom.
     with open("bingo-footer.html", "r") as bingo_footer_file:
         bingo_file.write(bingo_footer_file.read())

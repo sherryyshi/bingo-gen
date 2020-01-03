@@ -14,8 +14,16 @@
         <td class="cell  {% if cell == "BINGO" %} bingo {% endif %}">
             {{ cell }}
             <div class="answer">
+                {% if cell is type_ask %}
                 Name: _____________
                 Answer: ____________
+                {% else %}
+                    {% if cell is type_find%}
+                    Name: _____________
+                    {% else %}
+                    Done: _____________
+                    {% endif %}
+                {% endif %}
             </div>
         </td>
         {% endfor %}
